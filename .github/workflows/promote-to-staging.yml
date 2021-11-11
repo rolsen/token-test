@@ -1,0 +1,41 @@
+name: Promote code to staging
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  merge-to-staging-branch:
+    name: Merge to staging
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    container:
+      image: ubuntu
+
+    steps:
+      - name: Update git if necessary
+        run: apt-get update && apt-get install -y git
+      - uses: actions/checkout@v2
+        with:
+          ref: staging
+      # - name: Install Dependencies
+      #   run: apt-get -y install curl jq
+      # - uses: './.github/actions/wait-for-successful-commit-checks'
+      #   with:
+      #     commit-sha: ${{ github.sha }}
+      #     github-access-token: ${{ secrets.DEVOPS_ALL_GITHUB_DEVOPS_BOT_PAT }}
+      #     github-repository: ${{ github.repository }}
+      #     ignore-jobs-named: Merge to staging
+      - name: merge
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git fetch --all
+          git merge --ff-only origin/main
+      - name: push
+        run: git push
